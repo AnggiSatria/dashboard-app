@@ -17,28 +17,6 @@ export const createSales = () => {
   return { mutations };
 };
 
-export const readSalesByProduct = (activeFilter) => {
-  return useQuery({
-    queryKey: ["getSalesByProduct", activeFilter],
-    queryFn: async () => await getSalesByProduct(activeFilter),
-    refetchOnWindowFocus: false,
-    refetchOnmount: false,
-    refetchOnReconnect: false,
-    retry: false,
-  });
-};
-
-export const readSalesByDate = (activeFilter) => {
-  return useQuery({
-    queryKey: ["getSalesByProduct", activeFilter],
-    queryFn: async () => await getSalesByDate(activeFilter),
-    refetchOnWindowFocus: false,
-    refetchOnmount: false,
-    refetchOnReconnect: false,
-    retry: false,
-  });
-};
-
 export const readAllSales = (activeFilter) => {
   return useQuery({
     queryKey: ["getAllSales", activeFilter],

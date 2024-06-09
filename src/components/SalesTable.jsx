@@ -70,6 +70,7 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import SearchBar from "./SearchBar";
 
 const dayJsCConfig = (value) => {
   return dayjs(value).format(`YYYY-MM-DD`);
@@ -241,16 +242,7 @@ export default function SalesTable(props) {
           <div className="flex w-full flex-grow">
             <div className="w-full h-full">
               <div className="flex items-center py-4 gap-3">
-                <Input
-                  placeholder="Filter Products..."
-                  value={table?.getColumn("product")?.getFilterValue() ?? ""}
-                  onChange={(event) =>
-                    table
-                      ?.getColumn("product")
-                      ?.setFilterValue(event.target.value)
-                  }
-                  className="max-w-sm"
-                />
+                <SearchBar table={table} />
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline">Add Sales</Button>

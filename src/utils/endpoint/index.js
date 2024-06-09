@@ -9,16 +9,6 @@ export const getAllSales = (activeFilter) => {
   return api.get(handlers, { params: { ...queryString } });
 };
 
-export const getSalesByProduct = (activeFilter) => {
-  const queryString = QueryString.parse(removeEmptyAttributes(activeFilter));
-  return api.get(`${handlers}/product`, { params: { ...queryString } });
-};
-
-export const getSalesByDate = (activeFilter) => {
-  const queryString = QueryString.parse(removeEmptyAttributes(activeFilter));
-  return api.get(`${handlers}/date`, { params: { ...queryString } });
-};
-
 export const postSales = (payload) => {
   return api.post(`${handlers}`, payload);
 };
