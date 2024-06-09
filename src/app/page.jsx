@@ -2,6 +2,7 @@
 
 import DateFilter from "@/components/DateFilter";
 import SalesChart from "@/components/SalesChart";
+import SalesTable from "@/components/SalesTable";
 import Statictics from "@/components/Statictics";
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
           <SalesChart />
           <Statictics />
         </div>
-        <div className="flex w-5/6 min-h-[400px] bg-white shadow rounded-md"></div>
+        <SalesTable />
       </div>
     </main>
   );
