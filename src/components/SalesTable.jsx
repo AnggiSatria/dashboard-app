@@ -185,7 +185,7 @@ export const columns = [
 ];
 
 export default function SalesTable(props) {
-  const { dataSales, isLoading } = props;
+  const { dataSales, isLoading, setText } = props;
 
   const methods = useForm();
   const {
@@ -242,7 +242,7 @@ export default function SalesTable(props) {
           <div className="flex w-full flex-grow">
             <div className="w-full h-full">
               <div className="flex items-center py-4 gap-3">
-                <SearchBar table={table} />
+                <SearchBar table={table} setText={setText} />
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline">Add Sales</Button>

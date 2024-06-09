@@ -7,16 +7,21 @@ import Statictics from "@/components/Statictics";
 import { readAllSales } from "@/utils/hooks";
 import { addDays, format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import React from "react";
+import React, { useState } from "react";
+import { useDebounce } from "use-debounce";
 
 export default function Home() {
   const [date, setDate] = React.useState({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    from: new Date(2023, 0, 1),
+    to: addDays(new Date(2023, 0, 1), 20),
   });
+
+  const [text, setText] = useState("");
+  const [value] = useDebounce(text, 1000);
 
   const activeFilter = {
     keywords: "",
+    product: value,
     start_date: date.from,
     end_date: date.to,
   };
@@ -35,7 +40,11 @@ export default function Home() {
           <SalesChart dataSales={dataSales} isLoading={isLoading} />
           <Statictics dataSales={dataSales} />
         </div>
-        <SalesTable dataSales={dataSales} isLoading={isLoading} />
+        <SalesTable
+          dataSales={dataSales}
+          isLoading={isLoading}
+          setText={setText}
+        />
       </div>
     </main>
   );
