@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,6 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { readAllSales } from "@/utils/hooks";
 
 ChartJS.register(
   CategoryScale,
@@ -19,38 +20,54 @@ ChartJS.register(
   Legend
 );
 
-const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top",
-    },
-    title: {
-      display: false,
-      text: "Chart.js Bar Chart",
-    },
-  },
-};
+export default function SalesChart(props) {
+  const { dataSales, isLoading } = props;
 
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
-
-const data = {
-  labels,
-  datasets: [
-    {
-      label: "Dataset 1",
-      data: [120, 250, 300, 500, 450, 320, 540],
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: false,
+        text: "Chart.js Bar Chart",
+      },
     },
-    {
-      label: "Dataset 2",
-      data: [200, 400, 350, 600, 500, 450, 600],
-      backgroundColor: "rgba(53, 162, 235, 0.5)",
-    },
-  ],
-};
+  };
 
-export default function SalesChart() {
+  const labels = dataSales?.map((res) => {
+    return res?.product;
+  });
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Dataset 1",
+        data: [120, 250, 300, 500, 450, 320, 540],
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+      {
+        label: "Dataset 2",
+        data: [200, 400, 350, 600, 500, 450, 600],
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+    ],
+  };
+
+  useEffect(() => {
+    data.datasets.push(
+      dataSales?.map((res) => {
+        return {
+          label: res?.product,
+          data: [120, 250, 300, 500, 450, 320, 540],
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+        };
+      })
+    );
+  }, []);
+
   return (
     <>
       <div className="bg-white shadow w-full md:w-1/2 h-[320px] md:h-full rounded-md p-[18px]">

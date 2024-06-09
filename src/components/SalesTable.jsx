@@ -39,43 +39,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { readAllSales } from "@/utils/hooks";
+import dayjs from "dayjs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "@radix-ui/react-icons";
+import { format } from "date-fns";
+import useAddSales from "@/utils/hooks/add-sales";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 
-const data = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@hotmail.com",
-  },
-];
+const dayJsCConfig = (value) => {
+  return dayjs(value).format(`YYYY-MM-DD`);
+};
 
 export const columns = [
   {
-    id: "select",
+    id: "_id",
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -97,32 +99,49 @@ export const columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "product",
+    header: "Product",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="capitalize">{row.getValue("product")}</div>
     ),
   },
   {
-    accessorKey: "email",
+    accessorKey: "date",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          Date
           <CaretSortIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => (
+      <div className="lowercase">{dayJsCConfig(row.getValue(date))}</div>
+    ),
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "sales",
+    header: () => <div className="text-right">Sales</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(row.getValue("sales"));
+
+      // Format the amount as a dollar amount
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+
+      return <div className="text-right font-medium">{formatted}</div>;
+    },
+  },
+  {
+    accessorKey: "revenue",
+    header: () => <div className="text-right">Revenue</div>,
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("revenue"));
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -164,14 +183,35 @@ export const columns = [
   },
 ];
 
-export default function SalesTable() {
+export default function SalesTable(props) {
+  const { dataSales, isLoading } = props;
+
+  const methods = useForm();
+  const {
+    register,
+    handleSubmit: submitAddSales,
+    control: controlAddSales,
+    isSubmitting,
+    errors,
+    loading,
+    onSubmit,
+    setValue,
+  } = useAddSales();
+
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [tableData, setTableData] = React.useState([]);
+
+  React.useEffect(() => {
+    if (!isLoading && dataSales) {
+      setTableData(dataSales);
+    }
+  }, [isLoading, dataSales]);
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -189,6 +229,8 @@ export default function SalesTable() {
     },
   });
 
+  const [date, setDate] = React.useState();
+
   return (
     <>
       <div className="flex w-5/6 min-h-[400px] bg-white shadow rounded-md p-[18px]">
@@ -198,15 +240,127 @@ export default function SalesTable() {
           </div>
           <div className="flex w-full flex-grow">
             <div className="w-full h-full">
-              <div className="flex items-center py-4">
+              <div className="flex items-center py-4 gap-3">
                 <Input
-                  placeholder="Filter emails..."
-                  value={table.getColumn("email")?.getFilterValue() ?? ""}
+                  placeholder="Filter Products..."
+                  value={table?.getColumn("product")?.getFilterValue() ?? ""}
                   onChange={(event) =>
-                    table.getColumn("email")?.setFilterValue(event.target.value)
+                    table
+                      ?.getColumn("product")
+                      ?.setFilterValue(event.target.value)
                   }
                   className="max-w-sm"
                 />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Add Sales</Button>
+                  </DialogTrigger>
+                  <FormProvider {...methods}>
+                    <form onSubmit={submitAddSales(onSubmit)}>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Add Sales</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="grid gap-4 py-4">
+                          <FormField
+                            control={controlAddSales}
+                            name="product"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Product</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage>
+                                  {errors.product?.message}
+                                </FormMessage>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={controlAddSales}
+                            name="date"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !date && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {date ? (
+                                        format(date, "PPP")
+                                      ) : (
+                                        <span>Pick a date</span>
+                                      )}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-auto p-0"
+                                    align="start"
+                                  >
+                                    <Calendar
+                                      mode="single"
+                                      selected={date}
+                                      onSelect={(date) => {
+                                        setDate(date);
+                                        setValue("date", date);
+                                      }}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage>
+                                  {errors.date?.message}
+                                </FormMessage>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={controlAddSales}
+                            name="sales"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Sales</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage>
+                                  {errors.sales?.message}
+                                </FormMessage>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={controlAddSales}
+                            name="revenue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Revenue</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage>
+                                  {errors?.revenue?.message}
+                                </FormMessage>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <DialogFooter>
+                          <Button type="submit">Save changes</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </form>
+                  </FormProvider>
+                </Dialog>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="ml-auto">

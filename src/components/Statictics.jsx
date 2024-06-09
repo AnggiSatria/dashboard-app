@@ -31,7 +31,9 @@ const data = {
   ],
 };
 
-export default function Statictics() {
+export default function Statictics(props) {
+  const { dataSales, isLoading } = props;
+
   return (
     <>
       <div className="bg-white shadow w-full md:w-1/2 min-h-[320px] md:h-full rounded-md p-[18px]">
