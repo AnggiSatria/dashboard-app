@@ -117,9 +117,12 @@ export default function SalesTable(props) {
       .mutateAsync(id)
       .then((res) => {
         refetch();
+        toast.success("Successfully Deleted!");
         // onClose();
       })
-      .catch((err) => {});
+      .catch((err) => {
+        toast.error("Please Try Again!");
+      });
   };
 
   const columns = [
