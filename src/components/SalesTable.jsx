@@ -18,7 +18,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -44,7 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { readAllSales } from "@/utils/hooks";
+import { deletedSales, readAllSales } from "@/utils/hooks";
 import dayjs from "dayjs";
 import {
   Dialog,
@@ -60,8 +59,8 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
-import useAddSales from "@/utils/hooks/add-sales";
 import {
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -71,133 +70,142 @@ import {
 } from "./ui/form";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import SearchBar from "./SearchBar";
+import useAddSales from "@/utils/hooks/addSales";
 
 const dayJsCConfig = (value) => {
   return dayjs(value).format(`YYYY-MM-DD`);
 };
 
-export const columns = [
-  {
-    id: "_id",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "product",
-    header: "Product",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("product")}</div>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Date
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="lowercase">{dayJsCConfig(row.getValue(date))}</div>
-    ),
-  },
-  {
-    accessorKey: "sales",
-    header: () => <div className="text-right">Sales</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("sales"));
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-
-      return <div className="text-right font-medium">{formatted}</div>;
-    },
-  },
-  {
-    accessorKey: "revenue",
-    header: () => <div className="text-right">Revenue</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("revenue"));
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-
-      return <div className="text-right font-medium">{formatted}</div>;
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
-
 export default function SalesTable(props) {
-  const { dataSales, isLoading, setText } = props;
-
+  const { dataSales, isLoading, setText, refetch } = props;
+  const { mutations: mutationsDeletedSales } = deletedSales();
   const methods = useForm();
   const {
     register,
-    handleSubmit: submitAddSales,
-    control: controlAddSales,
-    isSubmitting,
+    handleSubmit,
+    control,
     errors,
     loading,
     onSubmit,
     setValue,
   } = useAddSales();
+
+  console.log(register());
+
+  const handleDelete = (id) => {
+    mutationsDeletedSales
+      .mutateAsync(id)
+      .then((res) => {
+        refetch();
+        onClose();
+      })
+      .catch((err) => {});
+  };
+
+  const columns = [
+    {
+      id: "_id",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "product",
+      header: "Product",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("product")}</div>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Date
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="lowercase">{dayJsCConfig(row.getValue(date))}</div>
+      ),
+    },
+    {
+      accessorKey: "sales",
+      header: () => <div className="text-right">Sales</div>,
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("sales"));
+
+        // Format the amount as a dollar amount
+        const formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(amount);
+
+        return <div className="text-right font-medium">{formatted}</div>;
+      },
+    },
+    {
+      accessorKey: "revenue",
+      header: () => <div className="text-right">Revenue</div>,
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("revenue"));
+
+        // Format the amount as a dollar amount
+        const formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(amount);
+
+        return <div className="text-right font-medium">{formatted}</div>;
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const idSales = row.original._id;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <DotsHorizontalIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleDelete(idSales)}>
+                Delete
+              </DropdownMenuItem>
+              <DropdownMenuItem>Updated</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
@@ -248,102 +256,88 @@ export default function SalesTable(props) {
                     <Button variant="outline">Add Sales</Button>
                   </DialogTrigger>
                   <FormProvider {...methods}>
-                    <form onSubmit={submitAddSales(onSubmit)}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                       <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                           <DialogTitle>Add Sales</DialogTitle>
+                          <DialogDescription>
+                            Make changes to your profile here. Click save when
+                            you're done.
+                          </DialogDescription>
                         </DialogHeader>
 
                         <div className="grid gap-4 py-4">
-                          <FormField
-                            control={controlAddSales}
-                            name="product"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Product</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage>
-                                  {errors.product?.message}
-                                </FormMessage>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={controlAddSales}
-                            name="date"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date</FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {date ? (
-                                        format(date, "PPP")
-                                      ) : (
-                                        <span>Pick a date</span>
-                                      )}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                  >
+                          <div className="flex flex-col gap-4">
+                            <Label htmlFor="product">Product</Label>
+                            <Input
+                              id="product"
+                              {...register("product")}
+                              className="col-span-3"
+                            />
+                            <span>{errors.product?.message}</span>
+                          </div>
+
+                          <div className="flex flex-col gap-4">
+                            <Label htmlFor="sales">Sales</Label>
+                            <Input
+                              id="sales"
+                              {...register("sales")}
+                              className="col-span-3"
+                            />
+                            <span>{errors.sales?.message}</span>
+                          </div>
+
+                          <div className="flex flex-col gap-4">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {date ? (
+                                    format(date, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Controller
+                                  name="date"
+                                  control={control}
+                                  render={({ field }) => (
                                     <Calendar
                                       mode="single"
-                                      selected={date}
+                                      selected={field.value}
                                       onSelect={(date) => {
+                                        field.onChange(date);
                                         setDate(date);
-                                        setValue("date", date);
                                       }}
                                       initialFocus
                                     />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage>
-                                  {errors.date?.message}
-                                </FormMessage>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={controlAddSales}
-                            name="sales"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Sales</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage>
-                                  {errors.sales?.message}
-                                </FormMessage>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={controlAddSales}
-                            name="revenue"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Revenue</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage>
-                                  {errors?.revenue?.message}
-                                </FormMessage>
-                              </FormItem>
-                            )}
-                          />
+                                  )}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <span>{errors.date?.message}</span>
+                          </div>
+
+                          <div className="flex flex-col gap-4">
+                            <Label htmlFor="revenue">Revenue</Label>
+                            <Input
+                              id="revenue"
+                              {...register("revenue")}
+                              className="col-span-3"
+                            />
+                            <span>{errors.revenue?.message}</span>
+                          </div>
                         </div>
 
                         <DialogFooter>
