@@ -177,7 +177,7 @@ export default function SalesTable(props) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
+        const idSales = row.original._id;
 
         return (
           <DropdownMenu>
