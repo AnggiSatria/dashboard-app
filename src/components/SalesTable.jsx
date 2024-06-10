@@ -71,6 +71,9 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "./ui/use-toast";
 
 const dayJsCConfig = (value) => {
   return dayjs(value).format(`YYYY-MM-DD`);
@@ -187,10 +190,9 @@ export const columns = [
 export default function SalesTable(props) {
   const { dataSales, isLoading, setText } = props;
 
-  const methods = useForm();
   const { form, loading, onSubmit } = useAddSales();
 
-  console.log(form.watch);
+  // console.log(form.watch());
 
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
@@ -236,7 +238,7 @@ export default function SalesTable(props) {
             <div className="w-full h-full">
               <div className="flex items-center py-4 gap-3">
                 <SearchBar table={table} setText={setText} />
-                <Dialog>
+                {/* <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline">Add Sales</Button>
                   </DialogTrigger>
@@ -330,13 +332,122 @@ export default function SalesTable(props) {
                             )}
                           />
                         </div>
-
-                        <DialogFooter>
-                          <Button type="submit">Save changes</Button>
-                        </DialogFooter>
+                        <Button type="submit">Submit</Button>
+          
                       </DialogContent>
                     </form>
                   </Form>
+                </Dialog> */}
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Add Sales</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Sales</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-6"
+                      >
+                        <FormField
+                          control={form.control}
+                          name="product"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Add Product..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "w-full pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP")
+                                      ) : (
+                                        <span>Pick a date</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="w-auto p-0"
+                                  align="start"
+                                >
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) =>
+                                      date > new Date() ||
+                                      date < new Date("1900-01-01")
+                                    }
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="sales"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sales</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Add Sales..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="revenue"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Revenue</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Add Revenue..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <DialogFooter>
+                          <Button type="submit">Submit</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
                 </Dialog>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
