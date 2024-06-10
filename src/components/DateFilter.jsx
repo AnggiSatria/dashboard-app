@@ -7,12 +7,96 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import useAddSales from "@/utils/hooks/add-sales";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
 
 export default function DateFilter(props) {
   const { date, setDate, format } = props;
 
+  const { form, loading, onSubmit } = useAddSales();
+
   return (
     <>
+      {/* <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Add Sales</Button>
+        </DialogTrigger>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-2/3 space-y-6"
+          >
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add Sales</DialogTitle>
+              </DialogHeader>
+
+              <div className="grid gap-4 py-4">
+                <FormField
+                  control={form.control}
+                  name="product"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter Product" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sales"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sales</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="revenue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Revenue</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="submit">Save changes</Button>
+              </DialogFooter>
+            </DialogContent>
+          </form>
+        </Form>
+      </Dialog> */}
       <Popover>
         <PopoverTrigger asChild>
           <Button

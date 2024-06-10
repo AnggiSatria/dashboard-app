@@ -61,16 +61,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import useAddSales from "@/utils/hooks/add-sales";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import SearchBar from "./SearchBar";
 import {
+  Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import { Controller, FormProvider, useForm } from "react-hook-form";
-import SearchBar from "./SearchBar";
 
 const dayJsCConfig = (value) => {
   return dayjs(value).format(`YYYY-MM-DD`);
@@ -188,16 +188,9 @@ export default function SalesTable(props) {
   const { dataSales, isLoading, setText } = props;
 
   const methods = useForm();
-  const {
-    register,
-    handleSubmit: submitAddSales,
-    control: controlAddSales,
-    isSubmitting,
-    errors,
-    loading,
-    onSubmit,
-    setValue,
-  } = useAddSales();
+  const { form, loading, onSubmit } = useAddSales();
+
+  console.log(form.watch);
 
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
@@ -247,8 +240,8 @@ export default function SalesTable(props) {
                   <DialogTrigger asChild>
                     <Button variant="outline">Add Sales</Button>
                   </DialogTrigger>
-                  <FormProvider {...methods}>
-                    <form onSubmit={submitAddSales(onSubmit)}>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
                       <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                           <DialogTitle>Add Sales</DialogTitle>
@@ -256,7 +249,7 @@ export default function SalesTable(props) {
 
                         <div className="grid gap-4 py-4">
                           <FormField
-                            control={controlAddSales}
+                            control={form.control}
                             name="product"
                             render={({ field }) => (
                               <FormItem>
@@ -264,14 +257,12 @@ export default function SalesTable(props) {
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
-                                <FormMessage>
-                                  {errors.product?.message}
-                                </FormMessage>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
                           <FormField
-                            control={controlAddSales}
+                            control={form.control}
                             name="date"
                             render={({ field }) => (
                               <FormItem>
@@ -308,14 +299,12 @@ export default function SalesTable(props) {
                                     />
                                   </PopoverContent>
                                 </Popover>
-                                <FormMessage>
-                                  {errors.date?.message}
-                                </FormMessage>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
                           <FormField
-                            control={controlAddSales}
+                            control={form.control}
                             name="sales"
                             render={({ field }) => (
                               <FormItem>
@@ -323,14 +312,12 @@ export default function SalesTable(props) {
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
-                                <FormMessage>
-                                  {errors.sales?.message}
-                                </FormMessage>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
                           <FormField
-                            control={controlAddSales}
+                            control={form.control}
                             name="revenue"
                             render={({ field }) => (
                               <FormItem>
@@ -338,9 +325,7 @@ export default function SalesTable(props) {
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
-                                <FormMessage>
-                                  {errors?.revenue?.message}
-                                </FormMessage>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -351,7 +336,7 @@ export default function SalesTable(props) {
                         </DialogFooter>
                       </DialogContent>
                     </form>
-                  </FormProvider>
+                  </Form>
                 </Dialog>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

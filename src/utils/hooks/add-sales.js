@@ -8,7 +8,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 
 export default function useAddSales() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -19,20 +18,14 @@ export default function useAddSales() {
     revenue: Yup.string().required("Revenue is required"),
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    control,
-    setValue,
-  } = useForm({
+  const form = useForm({
+    resolver: yupResolver(addSalesSchema),
     defaultValues: {
       product: "",
       date: "",
       sales: "",
       revenue: "",
     },
-    resolver: yupResolver(addSalesSchema),
   });
 
   const onSubmit = async (e) => {
@@ -50,13 +43,8 @@ export default function useAddSales() {
   };
 
   return {
-    register,
-    handleSubmit,
-    errors,
-    isSubmitting,
-    control,
     onSubmit,
     loading,
-    setValue,
+    form,
   };
 }
