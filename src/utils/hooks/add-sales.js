@@ -14,10 +14,6 @@ export default function useAddSales() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const { mutations } = createSales();
-
-  const addSalesSchema = z.object({});
-
   const FormSchema = z.object({
     product: z.string().min(1, "Product is required"),
     date: z.date({
@@ -37,44 +33,9 @@ export default function useAddSales() {
     },
   });
 
-  const onSubmit = async (e) => {
-    try {
-      setLoading(true);
-
-      console.log(e);
-
-      mutations
-        .mutateAsync(e)
-        .then((res) => {
-          console.log(res);
-          toast({
-            title: "Add Sales Succsess",
-            description: "",
-            action: <ToastAction altText="">Close</ToastAction>,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          toast({
-            title: "Add Sales Error",
-            description: err.response.data.data.message,
-            action: <ToastAction altText="">Close</ToastAction>,
-          });
-        });
-    } catch (error) {
-      setLoading(false);
-
-      toast({
-        title: "Add Sales Error",
-        description: "Please check your input and try again",
-        action: <ToastAction altText="">Close</ToastAction>,
-      });
-    }
-  };
-
   return {
-    onSubmit,
     loading,
     form,
+    setLoading,
   };
 }

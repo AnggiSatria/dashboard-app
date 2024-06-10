@@ -26,7 +26,7 @@ export default function Home() {
     end_date: date.to,
   };
 
-  const { data: dataAllSales, isLoading } = readAllSales(activeFilter);
+  const { data: dataAllSales, isLoading, refetch } = readAllSales(activeFilter);
 
   const dataSales = dataAllSales && dataAllSales?.data;
 
@@ -44,6 +44,7 @@ export default function Home() {
           dataSales={dataSales}
           isLoading={isLoading}
           setText={setText}
+          refetch={refetch}
         />
       </div>
     </main>

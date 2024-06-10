@@ -44,7 +44,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { deletedSales, readAllSales } from "@/utils/hooks";
+import { createSales, deletedSales, readAllSales } from "@/utils/hooks";
 import dayjs from "dayjs";
 import {
   Dialog,
@@ -73,16 +73,42 @@ import {
 } from "./ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "./ui/use-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const dayJsCConfig = (value) => {
   return dayjs(value).format(`YYYY-MM-DD`);
 };
 
 export default function SalesTable(props) {
-  const { dataSales, isLoading, setText } = props;
+  const { dataSales, isLoading, setText, refetch } = props;
 
-  const { form, loading, onSubmit } = useAddSales();
+  const { form, loading, setLoading } = useAddSales();
+
+  const { mutations } = createSales();
+
+  const onSubmit = async (e) => {
+    try {
+      setLoading(true);
+
+      console.log(e);
+
+      mutations
+        .mutateAsync(e)
+        .then((res) => {
+          setLoading(false);
+          console.log(res);
+          refetch();
+          toast.success("Successfully Added!");
+        })
+        .catch((err) => {
+          toast.error("Error Added!");
+        });
+    } catch (error) {
+      setLoading(false);
+
+      toast.error("Please Try Again!");
+    }
+  };
 
   const { mutations: mutationsDeletedSales } = deletedSales();
 
@@ -91,7 +117,7 @@ export default function SalesTable(props) {
       .mutateAsync(id)
       .then((res) => {
         refetch();
-        onClose();
+        // onClose();
       })
       .catch((err) => {});
   };
@@ -238,6 +264,7 @@ export default function SalesTable(props) {
 
   return (
     <>
+      <Toaster />
       <div className="flex w-5/6 min-h-[400px] bg-white shadow rounded-md p-[18px]">
         <div className="w-full h-full flex flex-col gap-3">
           <div className="flex w-full h-[25px] text-base text-[#14184B] items-center font-bold">
@@ -247,106 +274,6 @@ export default function SalesTable(props) {
             <div className="w-full h-full">
               <div className="flex items-center py-4 gap-3">
                 <SearchBar table={table} setText={setText} />
-                {/* <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Add Sales</Button>
-                  </DialogTrigger>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Add Sales</DialogTitle>
-                        </DialogHeader>
-
-                        <div className="grid gap-4 py-4">
-                          <FormField
-                            control={form.control}
-                            name="product"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Product</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="date"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date</FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {date ? (
-                                        format(date, "PPP")
-                                      ) : (
-                                        <span>Pick a date</span>
-                                      )}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                  >
-                                    <Calendar
-                                      mode="single"
-                                      selected={date}
-                                      onSelect={(date) => {
-                                        setDate(date);
-                                        setValue("date", date);
-                                      }}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="sales"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Sales</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="revenue"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Revenue</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <Button type="submit">Submit</Button>
-          
-                      </DialogContent>
-                    </form>
-                  </Form>
-                </Dialog> */}
 
                 <Dialog>
                   <DialogTrigger asChild>
